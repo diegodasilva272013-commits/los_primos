@@ -1,0 +1,7 @@
+node_modules/
+dist/
+audit/
+_src_img/
+_brand/
+*.log
+.vite/

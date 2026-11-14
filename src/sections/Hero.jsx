@@ -32,7 +32,7 @@ const SHORT = { pulpo: "Pulpo", estrella: "Estrella", bbq: "BBQ" };
 function Chars({ text, className }) {
   return [...text].map((c, i) => (
     <span key={i} className={`inline-block ${className}`}>
-      {c === " " ? " " : c}
+      {c === " " ? " " : c}
     </span>
   ));
 }

@@ -6,3 +6,6 @@ _brand/
 *.log
 .vite/
 para-videos/
+videos-originales/
+_vid/
+_src_hd/

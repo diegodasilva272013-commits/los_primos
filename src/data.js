@@ -164,9 +164,12 @@ export const VALORES = ["Amor", "Humildad", "Congruencia", "Pasión", "Lealtad",
 
 // Hero flavor switcher (clean local cutouts in /public/cut). CHISPA-style: each one recolors the hero.
 export const HERO_PLATOS = [
-  { id: "pulpo", name: "Pulpo Zarandeado", price: "$559", line: "El platillo de la casa, a las brasas.", img: "/food/pulpo-zarandeado.webp", w: 1600, h: 1409, bg: "#26a0dc", ink: "#1b2766" },
-  { id: "aguachile", name: "Aguachile House", price: "$299", line: "Camarón curtido, pepino y cebolla morada.", img: "/food/aguachile-house.webp", w: 1600, h: 963, bg: "#f6d840", ink: "#1b2766" },
-  { id: "tio", name: "Preferida del Tío", price: "$638", line: "Para dos: envueltos, empanizados, filete y aros.", img: "/food/preferida-del-tio.webp", w: 1600, h: 828, bg: "#ed6f5f", ink: "#1b2766" },
+  // video: cinematic intro (plays once per activation, then dissolves into the HD cut-out, which keeps floating).
+  // bg/ink = hero ambience matched to the video's own background so its feathered edges disappear.
+  // dark = [start, end] seconds where the video goes to black (fire scene): the hero dims in sync.
+  { id: "pulpo", name: "Pulpo Zarandeado", price: "$559", line: "El platillo de la casa, a las brasas.", img: "/food/pulpo-zarandeado.webp", w: 1600, h: 1409, bg: "#48a4d5", ink: "#1b2766", video: "/video/hero-pulpo.mp4", poster: "/video/hero-pulpo-poster.jpg", vw: 1600, vh: 900, dark: [4.77, 6.49], darkBg: "#050608" },
+  { id: "aguachile", name: "Aguachile House", price: "$299", line: "Camarón curtido, pepino y cebolla morada.", img: "/food/aguachile-house.webp", w: 1600, h: 963, bg: "#030606", ink: "#fbfdff", video: "/video/hero-aguachile.mp4", poster: "/video/hero-aguachile-poster.jpg", vw: 1280, vh: 682 },
+  { id: "tio", name: "Preferida del Tío", price: "$638", line: "Para dos: envueltos, empanizados, filete y aros.", img: "/food/preferida-del-tio.webp", w: 1600, h: 828, bg: "#1f1406", ink: "#fbfdff", video: "/video/hero-tio.mp4", poster: "/video/hero-tio-poster.jpg", vw: 1280, vh: 682 },
 ];
 
 // VITRINA: every dish with HD cut-out photo. `video` = "/video/<id>.mp4" once the client sends the clips.

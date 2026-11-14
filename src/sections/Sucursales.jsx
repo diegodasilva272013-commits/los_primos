@@ -1,10 +1,17 @@
-import { Fragment, useRef } from "react";
+import { Fragment, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
 import { HouseLine, MapPin, Phone } from "@phosphor-icons/react";
-import { gsap } from "../lib/motion.js";
-import { SUCURSALES } from "../data.js";
+import { gsap, reduceMotion } from "../lib/motion.js";
+import { FOTOS, SUCURSALES } from "../data.js";
 
 gsap.registerPlugin(useGSAP);
+
+/* Lifestyle photos for the xl hover rail (decorative, cycled per row). Natural width 1800/1080. */
+const PHOTOS = [
+  { src: FOTOS.pulpoMesa, w: 1800, h: 1200, pos: "55% 60%" },
+  { src: FOTOS.aros, w: 1800, h: 1200, pos: "50% 50%" },
+  { src: FOTOS.mariscada, w: 1080, h: 1080, pos: "50% 50%" },
+];
 
 /*
   Layout family: interactive index list on marino. One row per branch.
@@ -42,8 +49,11 @@ function Chars({ text }) {
 
 export default function Sucursales() {
   const scope = useRef(null);
+  const rail = useRef(null);
+  const frame = useRef(null);
+  const [active, setActive] = useState(0);
 
-  useGSAP(
+  const { contextSafe } = useGSAP(
     () => {
       const mm = gsap.matchMedia();
 
@@ -82,6 +92,17 @@ export default function Sucursales() {
     { scope }
   );
 
+  /* Photo follows the hovered/focused row (xl only, the rail is display:none below). */
+  const show = contextSafe((i, row) => {
+    setActive(i % PHOTOS.length);
+    const r = rail.current;
+    const f = frame.current;
+    if (!r || !f || !r.offsetParent) return;
+    const max = Math.max(0, r.offsetHeight - f.offsetHeight);
+    const y = gsap.utils.clamp(0, max, row.offsetTop + row.offsetHeight / 2 - f.offsetHeight / 2);
+    gsap.to(f, { y, duration: reduceMotion() ? 0 : 0.9, ease: "expo.out", overwrite: true });
+  });
+
   return (
     <section id="sucursales" ref={scope} aria-labelledby="sucursales-titulo" className="bg-marino py-28 text-blanco md:py-40">
       <div className="mx-auto max-w-[1400px] px-4 md:px-8">
@@ -98,11 +119,18 @@ export default function Sucursales() {
           </span>
         </h2>
 
-        <div className="relative mt-14 md:mt-24">
+        <div className="relative mt-14 grid grid-cols-1 md:mt-24 xl:grid-cols-[minmax(0,1fr)_minmax(0,340px)] xl:gap-12 2xl:grid-cols-[minmax(0,1fr)_minmax(0,380px)]">
+          <div className="min-w-0">
           <ul>
 
-          {SUCURSALES.map((s) => (
-            <li key={s.name} data-row className="group relative">
+          {SUCURSALES.map((s, i) => (
+            <li
+              key={s.name}
+              data-row
+              className="group relative"
+              onPointerEnter={(e) => show(i, e.currentTarget)}
+              onFocus={(e) => show(i, e.currentTarget)}
+            >
               <div data-line aria-hidden="true" className="absolute inset-x-0 top-0 h-px bg-white/20" />
               <div
                 aria-hidden="true"
@@ -159,6 +187,32 @@ export default function Sucursales() {
           ))}
           </ul>
           <div aria-hidden="true" className="h-px bg-white/20" />
+          </div>
+
+          {/* xl only: a photo column beside the list. The frame glides to the hovered row and
+              crossfades its photo. It lives in its own column, so it never covers any text. */}
+          <div ref={rail} aria-hidden="true" className="relative hidden xl:block">
+            <div
+              ref={frame}
+              className="absolute inset-x-0 top-0 aspect-[4/5] overflow-hidden rounded-[32px] bg-marino-2 shadow-[0_40px_70px_-30px_rgb(6_10_30/0.7)] will-change-transform"
+            >
+              {PHOTOS.map((ph, k) => (
+                <img
+                  key={ph.src}
+                  src={ph.src}
+                  width={ph.w}
+                  height={ph.h}
+                  alt=""
+                  loading="lazy"
+                  decoding="async"
+                  className={`absolute inset-0 h-full w-full object-cover transition-[opacity,scale] duration-700 ease-[var(--ease-out-expo)] ${
+                    k === active ? "scale-100 opacity-100" : "scale-110 opacity-0"
+                  }`}
+                  style={{ objectPosition: ph.pos }}
+                />
+              ))}
+            </div>
+          </div>
         </div>
 
         <p data-dates className="mt-12 max-w-[60ch] text-base leading-relaxed text-blanco/80 md:text-lg">

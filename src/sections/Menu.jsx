@@ -6,10 +6,87 @@ import { MENU, WHATSAPP } from "../data.js";
 
 const TITLE = "El menú";
 
+/* Same card language as the Vitrina: brand-color panel, studio light, the dish fills the card. */
+const PANELS = [
+  { bg: "bg-cielo", light: "rgba(255,255,255,0.55)" },
+  { bg: "bg-amarillo", light: "rgba(255,255,255,0.62)" },
+  { bg: "bg-coral", light: "rgba(255,236,226,0.55)" },
+  { bg: "bg-marino-2", light: "rgba(130,200,245,0.38)" },
+];
+const SHADOW = "radial-gradient(closest-side, rgba(12,21,56,0.42), rgba(12,21,56,0))";
+
+/* Plate width from container units, capped at the file's natural width (never upscaled). */
+function plateStyle(c, kx, ky) {
+  const ar = c.w / c.h;
+  const y = ar < 1 ? Math.min(ky, 1.02) : ky;
+  return {
+    width: `min(${c.w}px, ${Math.round(kx * 100)}cqw, ${(y * ar * 100).toFixed(1)}cqh)`,
+    maxWidth: "none",
+    height: "auto",
+  };
+}
+
+const fromPrice = (c) => Math.min(...c.items.map((it) => parseInt(it[2].replace(/\D/g, ""), 10) || Infinity));
+
+/*
+  One category visual. `label` adds the bottom marino scrim with name + starting price (decorative,
+  the same info is in the panel). Photos (bebidas) fill with object-cover; cut-outs bleed past the edges.
+*/
+function CategoryCard({ cat, index, label = true, alt = "", lazy = true }) {
+  const panel = PANELS[index % PANELS.length];
+  const imgProps = {
+    src: cat.img,
+    width: cat.w,
+    height: cat.h,
+    decoding: "async",
+    loading: lazy ? "lazy" : undefined,
+    alt,
+    "aria-hidden": alt ? undefined : "true",
+  };
+  return (
+    <div className={`absolute inset-0 overflow-hidden ${cat.photo ? "bg-abismo" : panel.bg} [container-type:size]`}>
+      {cat.photo ? (
+        <img {...imgProps} className="m-plate absolute inset-0 h-full w-full object-cover" />
+      ) : (
+        <>
+          <div
+            aria-hidden="true"
+            className="absolute inset-0"
+            style={{ background: `radial-gradient(75% 60% at 50% 40%, ${panel.light}, rgba(255,255,255,0) 72%)` }}
+          />
+          <div
+            aria-hidden="true"
+            className={`absolute left-1/2 h-[18%] w-[76%] -translate-x-1/2 blur-md ${label ? "top-[54%]" : "top-[62%]"}`}
+            style={{ background: SHADOW }}
+          />
+          <div className={`absolute inset-x-0 top-0 flex items-center justify-center ${label ? "bottom-[20%]" : "bottom-0"}`}>
+            <img {...imgProps} style={plateStyle(cat, 1.5, 1.3)} className="m-plate shrink-0" />
+          </div>
+        </>
+      )}
+      {label && (
+        <>
+          <div
+            aria-hidden="true"
+            className="absolute inset-x-0 bottom-0 h-[46%] bg-linear-to-t from-marino from-30% via-marino/85 via-60% to-transparent"
+          />
+          <div aria-hidden="true" className="absolute inset-x-0 bottom-0 flex items-end justify-between gap-4 p-6">
+            <span className="display display-stack min-w-0 text-balance pt-[0.15em] text-4xl text-blanco">{cat.label}</span>
+            <span className="shrink-0 pb-1 text-right">
+              <span className="block text-xs font-bold uppercase tracking-[0.18em] text-blanco/75">Desde</span>
+              <span className="display block text-3xl text-amarillo">${fromPrice(cat)}</span>
+            </span>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
+
 /*
   Light color block (espuma + marino) so the page breathes between dark sections.
-  Signature micro-interaction (pointer: fine only): hovering an item row shows a floating 220x160
-  rounded-[32px] preview of the category dish that follows the cursor, and the row gets an amarillo sweep.
+  Signature micro-interaction (pointer: fine only): hovering an item row shows a floating 240x180
+  rounded-[32px] card of the category dish that follows the cursor, and the row gets an amarillo sweep.
 */
 export default function Menu() {
   const root = useRef(null);
@@ -21,9 +98,9 @@ export default function Menu() {
   const [active, setActive] = useState(0);
   const [prev, setPrev] = useState(null);
   const cat = MENU[active];
-  const under = MENU[prev ?? active];
+  const underIndex = prev ?? active;
 
-  /* One-time: header reveal, frame inset reveal, blob spin, cursor preview setters. */
+  /* One-time: header reveal, card inset reveal, cursor preview setters. */
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -58,7 +135,7 @@ export default function Menu() {
         });
         gsap.fromTo(
           q(".m-frame"),
-          { clipPath: "inset(18% 14% 18% 14% round 32px)" },
+          { clipPath: "inset(16% 12% 16% 12% round 32px)" },
           {
             clipPath: "inset(0% 0% 0% 0% round 32px)",
             duration: 1.1,
@@ -66,14 +143,6 @@ export default function Menu() {
             scrollTrigger: { trigger: q(".m-panel")[0], start: "top 88%", once: true },
           }
         );
-        gsap.from(q(".m-blob"), {
-          scale: 0.6,
-          autoAlpha: 0,
-          duration: 1,
-          ease: "back.out(1.5)",
-          scrollTrigger: { trigger: q(".m-panel")[0], start: "top 88%", once: true },
-        });
-        gsap.to(q(".m-blob-spin"), { rotate: 360, duration: 40, ease: "none", repeat: -1 });
         gsap.from(q(".m-cta > *"), {
           y: 24,
           autoAlpha: 0,
@@ -86,7 +155,7 @@ export default function Menu() {
 
       mm.add("(prefers-reduced-motion: no-preference) and (pointer: fine)", () => {
         const c = cursor.current;
-        gsap.set(c, { xPercent: -50, yPercent: -50, scale: 0, autoAlpha: 0 });
+        gsap.set(c, { xPercent: -50, yPercent: -50, scale: 0.6, autoAlpha: 0 });
         follow.current = {
           x: gsap.quickTo(c, "x", { duration: 0.45, ease: "power3.out" }),
           y: gsap.quickTo(c, "y", { duration: 0.45, ease: "power3.out" }),
@@ -101,7 +170,10 @@ export default function Menu() {
     { scope: root }
   );
 
-  /* Items reveal on first view (short, early); on every tab change: inset wipe on the photo, items stagger. */
+  /*
+    Items are visible by default (only a small rise, no opacity hide on first view).
+    On tab change: clip-path inset wipe on the card, plate rotates in, items stagger.
+  */
   useGSAP(
     () => {
       const mm = gsap.matchMedia();
@@ -112,11 +184,10 @@ export default function Menu() {
         mm.add("(prefers-reduced-motion: no-preference)", () => {
           gsap.from(q(".m-item"), {
             y: 14,
-            autoAlpha: 0,
-            duration: 0.4,
+            duration: 0.5,
             ease: "power3.out",
             stagger: 0.03,
-            scrollTrigger: { trigger: q(".m-list")[0], start: "top 88%", once: true },
+            scrollTrigger: { trigger: q(".m-list")[0], start: "top 92%", once: true },
           });
         });
         return;
@@ -127,7 +198,14 @@ export default function Menu() {
           { clipPath: "inset(100% 0% 0% 0% round 32px)" },
           { clipPath: "inset(0% 0% 0% 0% round 32px)", duration: 0.85, ease: "expo.out" }
         );
-        gsap.fromTo(q(".m-img-top img"), { scale: 1.25 }, { scale: 1.08, duration: 1.1, ease: "expo.out" });
+        const plate = q(".m-img-top .m-plate");
+        if (MENU[active].photo) gsap.fromTo(plate, { scale: 1.18 }, { scale: 1, duration: 1.1, ease: "expo.out" });
+        else
+          gsap.fromTo(
+            plate,
+            { rotate: -16, scale: 0.82, yPercent: 8 },
+            { rotate: 0, scale: 1, yPercent: 0, duration: 1.1, ease: "expo.out" }
+          );
         gsap.fromTo(q(".m-cat-title"), { y: 24, autoAlpha: 0 }, { y: 0, autoAlpha: 1, duration: 0.45, ease: "power3.out" });
         gsap.fromTo(
           q(".m-item"),
@@ -173,20 +251,20 @@ export default function Menu() {
     f.x(e.clientX);
     f.y(e.clientY);
     f.lastX = e.clientX;
-    gsap.to(cursor.current, { scale: 1, autoAlpha: 1, duration: 0.45, ease: "back.out(1.8)", overwrite: "auto" });
+    gsap.to(cursor.current, { scale: 1, autoAlpha: 1, duration: 0.45, ease: "back.out(1.6)", overwrite: "auto" });
   };
   const onListMove = (e) => {
     const f = follow.current;
     if (!f) return;
     f.x(e.clientX);
     f.y(e.clientY);
-    f.r(gsap.utils.clamp(-18, 18, (e.clientX - f.lastX) * 1.2));
+    f.r(gsap.utils.clamp(-14, 14, (e.clientX - f.lastX) * 1.1));
     f.lastX = e.clientX;
   };
   const onListLeave = () => {
     if (!follow.current) return;
     follow.current.r(0);
-    gsap.to(cursor.current, { scale: 0, autoAlpha: 0, duration: 0.3, ease: "power2.in", overwrite: "auto" });
+    gsap.to(cursor.current, { scale: 0.6, autoAlpha: 0, duration: 0.25, ease: "power2.out", overwrite: "auto" });
   };
 
   return (
@@ -196,13 +274,13 @@ export default function Menu() {
       aria-labelledby="menu-titulo"
       className="relative overflow-x-clip bg-espuma pb-24 pt-24 text-marino md:pb-32 md:pt-32"
     >
-      {/* Floating dish preview that follows the pointer (desktop fine pointer only) */}
+      {/* Floating dish card that follows the pointer (desktop fine pointer only) */}
       <div
         ref={cursor}
         aria-hidden="true"
-        className="pointer-events-none fixed left-0 top-0 z-30 hidden h-[160px] w-[220px] overflow-hidden rounded-[32px] bg-blanco opacity-0 shadow-[0_24px_50px_-16px_rgba(27,39,102,0.5)] [@media(pointer:fine)]:block"
+        className="pointer-events-none fixed left-0 top-0 z-30 hidden h-[180px] w-[240px] overflow-hidden rounded-[32px] opacity-0 shadow-[0_24px_50px_-16px_rgba(27,39,102,0.55)] [@media(pointer:fine)]:block"
       >
-        <img src={cat.img} width={220} height={160} alt="" className="h-full w-full scale-[1.12] object-cover" />
+        <CategoryCard key={cat.id} cat={cat} index={active} label={false} />
       </div>
 
       <div className="mx-auto max-w-[1400px] px-4 md:px-8">
@@ -273,46 +351,15 @@ export default function Menu() {
           role="tabpanel"
           aria-labelledby={`tab-${cat.id}`}
           tabIndex={0}
-          className="m-panel mt-10 grid rounded-[32px] grid-cols-1 gap-12 md:mt-14 lg:grid-cols-12 lg:gap-14"
+          className="m-panel mt-10 grid grid-cols-1 gap-12 rounded-[32px] md:mt-14 lg:grid-cols-12 lg:gap-14"
         >
-          {/* Visual */}
+          {/* Visual: tall card, the dish fills it */}
           <div className="min-w-0 lg:col-span-5">
-            {/* Padding keeps the frame shadow and the offset blob inside the column (no clipped edges). */}
-            <div className="relative px-2 pb-10 pt-2 sm:px-6 lg:sticky lg:top-28">
-              <div className="relative mx-auto w-[min(100%,420px)]">
-                <div aria-hidden="true" className="m-blob pointer-events-none absolute -bottom-6 -right-4 w-[62%] opacity-90 sm:-right-6">
-                  <img
-                    src="/img/blob.webp"
-                    width={700}
-                    height={700}
-                    loading="lazy"
-                    decoding="async"
-                    alt=""
-                    className="m-blob-spin h-auto w-full"
-                  />
-                </div>
-                <div className="m-frame relative aspect-[4/5] w-full overflow-hidden rounded-[32px] bg-blanco shadow-[0_30px_60px_-24px_rgba(27,39,102,0.55)]">
-                  <img
-                    src={under.img}
-                    width={520}
-                    height={650}
-                    loading="lazy"
-                    decoding="async"
-                    alt=""
-                    aria-hidden="true"
-                    className="absolute inset-0 h-full w-full scale-[1.08] object-cover"
-                  />
-                  <div key={cat.id} className="m-img-top absolute inset-0 overflow-hidden rounded-[32px]">
-                    <img
-                      src={cat.img}
-                      width={520}
-                      height={650}
-                      loading="lazy"
-                      decoding="async"
-                      alt={`Platillo de la categoría ${cat.label} de Los Primos`}
-                      className="h-full w-full scale-[1.08] object-cover"
-                    />
-                  </div>
+            <div className="relative pb-6 lg:sticky lg:top-28">
+              <div className="m-frame relative mx-auto aspect-[4/5] w-[min(100%,440px)] overflow-hidden rounded-[32px] shadow-[0_30px_60px_-24px_rgba(27,39,102,0.55)]">
+                {prev !== null && <CategoryCard cat={MENU[underIndex]} index={underIndex} />}
+                <div key={cat.id} className="m-img-top absolute inset-0 overflow-hidden rounded-[32px]">
+                  <CategoryCard cat={cat} index={active} alt={`Platillo de la categoría ${cat.label} en Los Primos`} />
                 </div>
               </div>
             </div>
@@ -339,12 +386,9 @@ export default function Menu() {
                   />
                   <div className="flex items-baseline justify-between gap-4">
                     <span className="text-lg font-bold leading-snug text-marino">{name}</span>
-                    <span className="relative shrink-0 pb-1.5">
+                    <span className="relative shrink-0 pb-1.5 pt-[0.1em]">
                       <span className="display text-2xl text-marino">{price}</span>
-                      <span
-                        aria-hidden="true"
-                        className="absolute bottom-0 right-0 h-[3px] w-7 rounded-full bg-coral"
-                      />
+                      <span aria-hidden="true" className="absolute bottom-0 right-0 h-[3px] w-7 rounded-full bg-coral" />
                     </span>
                   </div>
                   {desc && <p className="mt-1.5 text-pretty text-sm leading-relaxed text-marino/80">{desc}</p>}

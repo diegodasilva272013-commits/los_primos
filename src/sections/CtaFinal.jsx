@@ -19,34 +19,36 @@ gsap.registerPlugin(useGSAP);
 const MOTION = "(prefers-reduced-motion: no-preference)";
 const PARALLAX = "(prefers-reduced-motion: no-preference) and (hover: hover) and (pointer: fine) and (min-width: 1024px)";
 
+/* HD cut-outs. Box is aspect 5/4 (max ~640px wide), so no plate is ever shown above its natural width
+   (pulpo 1600, cóctel 593 at ~30% = ~190px, estrella 1600). */
 const PLATES = [
   {
-    src: "/cut/pulpo.webp",
-    w: 1200,
-    h: 884,
-    alt: "Pulpo zarandeado con arroz y verdura fresca",
-    pos: "left-0 top-0 w-[50%] z-10",
-    tilt: "-rotate-[10deg]",
-    depth: 0.45,
-    from: -28,
+    src: "/food/pulpo-zarandeado.webp",
+    w: 1600,
+    h: 1409,
+    alt: "Pulpo zarandeado a las brasas con pepino, zanahoria y aguacate",
+    pos: "left-0 top-0 w-[62%] z-10",
+    tilt: "-rotate-[6deg]",
+    depth: 0.6,
+    from: -24,
   },
   {
-    src: "/cut/pulpo-dark.webp",
-    w: 798,
-    h: 498,
-    alt: "Pulpo a las brasas sobre pepino, zanahoria y aguacate",
-    pos: "left-[16%] top-[24%] w-[72%] z-20",
-    tilt: "rotate-[3deg]",
-    depth: 0.9,
-    from: 18,
+    src: "/food/coctel-camaron.webp",
+    w: 593,
+    h: 952,
+    alt: "Cóctel de camarón con salsa coctelera de la casa, aguacate y cilantro",
+    pos: "right-[3%] top-0 w-[30%] z-20",
+    tilt: "rotate-[7deg]",
+    depth: 1,
+    from: 26,
   },
   {
-    src: "/cut/estrella.webp",
-    w: 702,
-    h: 416,
+    src: "/food/combo-estrella.webp",
+    w: 1600,
+    h: 928,
     alt: "Combo Estrella con tostada, camaroncitos, camarón envuelto y taco",
-    pos: "right-0 bottom-0 w-[52%] z-30",
-    tilt: "rotate-[8deg]",
+    pos: "right-0 bottom-0 w-[64%] z-30",
+    tilt: "rotate-[4deg]",
     depth: 1.4,
     from: 32,
   },
@@ -181,7 +183,7 @@ export default function CtaFinal() {
       id="pedir"
       ref={scope}
       aria-labelledby="pedir-titulo"
-      className="relative isolate overflow-hidden bg-cielo py-24 text-marino md:py-28"
+      className="relative isolate overflow-hidden bg-cielo py-24 text-marino md:py-28 lg:py-24"
     >
       <Bubbles count={34} color="251,253,255" className="-z-10" />
 
@@ -198,6 +200,11 @@ export default function CtaFinal() {
 
         {/* Plate cluster (each plate has its own alt). Height capped so the section fits one screen. */}
         <div className="relative mx-auto aspect-[5/4] w-full max-w-[min(100%,560px)] lg:col-span-6 lg:col-start-7 lg:row-span-2 lg:row-start-1 lg:max-w-[min(100%,72dvh)]">
+          {/* Studio light behind the cluster */}
+          <div
+            aria-hidden="true"
+            className="pointer-events-none absolute inset-[-8%] bg-[radial-gradient(closest-side,rgb(255_255_255/0.42),transparent)]"
+          />
           {PLATES.map((p) => (
             <div key={p.src} data-par className={`absolute ${p.pos} will-change-transform`}>
               <div data-fly>

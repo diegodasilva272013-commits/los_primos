@@ -5,6 +5,7 @@ import { ScrollTrigger, gsap, scrollToTarget, reduceMotion } from "../lib/motion
 
 const LINKS = [
   ["Sabores", "#sabores"],
+  ["Platillos", "#platillos"],
   ["Historia", "#historia"],
   ["Menú", "#menu"],
   ["Combos", "#combos"],

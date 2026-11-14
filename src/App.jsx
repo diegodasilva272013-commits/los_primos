@@ -5,6 +5,7 @@ import Nav from "./sections/Nav.jsx";
 import Hero from "./sections/Hero.jsx";
 import Ticker from "./sections/Ticker.jsx";
 import Sabores from "./sections/Sabores.jsx";
+import Vitrina from "./sections/Vitrina.jsx";
 import Historia from "./sections/Historia.jsx";
 import Menu from "./sections/Menu.jsx";
 import Combos from "./sections/Combos.jsx";
@@ -32,6 +33,7 @@ export default function App() {
         <Hero />
         <Ticker />
         <Sabores />
+        <Vitrina />
         <Historia />
         <Menu />
         <Combos />

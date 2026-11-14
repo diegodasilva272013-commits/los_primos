@@ -1,31 +1,47 @@
 import { useEffect, useRef, useState } from "react";
 import { useGSAP } from "@gsap/react";
-import { SABORES } from "../data.js";
+import { SABORES, ILU } from "../data.js";
 import { gsap, scrollToTarget } from "../lib/motion.js";
 
 gsap.registerPlugin(useGSAP);
 
 /*
-  Four sabores, one color-morph story (CHISPA reel): full-bleed color, ONE floating cut-out product per screen.
-  Desktop (lg+, motion allowed): pinned stage, 12 cols. Text cols 1-6, product cols 7-12: the product never
-  covers text. The outlined names band slides only behind the product half. Each step the old product flies
-  out right and the new one flies in from the left.
+  Four sabores, one color-morph story (CHISPA reel): full-bleed color, ONE floating HD cut-out per screen.
+  Desktop (lg+, motion allowed): pinned stage, 12 cols. Text cols 1-6 (xl 1-5), product cols 7-12 (xl 6-12):
+  the product never covers text. Outlined names + brand line art live only behind the product half.
+  Each step: the old plate leaves right, the new one drops in and lands with a settle bounce.
+  Product box has a fixed aspect (BOX); each plate is fitted from its real w/h, never wider than its natural width.
   Mobile / reduced motion: stacked color blocks (name, line, product, body, specs), visible by default.
 */
 const PIN_QUERY = "(min-width: 1024px) and (prefers-reduced-motion: no-preference)";
 const MOBILE_MOTION = "(prefers-reduced-motion: no-preference)";
 const MASK = { clipPath: "inset(-0.3em -0.1em -0.1em -0.1em)" };
 const LAST = SABORES.length - 1;
+const BOX = 1.5;
+const HIDDEN = { visibility: "hidden", opacity: 0 };
+const STUDIO = "drop-shadow(0 36px 36px rgba(0,0,0,0.26)) drop-shadow(0 10px 12px rgba(0,0,0,0.16))";
+const ILUS = [
+  { src: ILU.almeja, w: 1000, h: 829 },
+  { src: ILU.crab, w: 1000, h: 856 },
+  { src: ILU.barco, w: 1000, h: 838 },
+];
 
 const ALT = {
-  pulpo: "Pulpo zarandeado a las brasas con arroz y verdura fresca",
-  brochetas: "Brochetas de camarón con pimiento, tocino, arroz y brócoli",
-  bbq: "Camarones envueltos en tocino bañados en salsa barbecue, con arroz y verdura",
-  estrella: "Combo Estrella con tostada de ceviche, camaroncitos, camarón envuelto y taco",
+  aguachile: "Aguachile negro: camarón curtido en salsa negra con pepino, zanahoria y cebolla morada",
+  bbq: "Camarones envueltos en tocino bañados en salsa barbecue, con arroz amarillo y verdura",
+  molcajete: "Molcajete mixto con chicharrón de pescado y de pulpo, guacamole y chiles toreados",
+  estrella: "Combo Estrella con tostada de ceviche, camaroncitos empanizados, camarón envuelto y taco",
 };
 
-// Widest word of each name in Anton em units (ZARANDEADO, BROCHETAS, ENVUELTOS, ESTRELLA): names fill their column.
-const WORD_EM = { pulpo: 4.73, brochetas: 4.0, bbq: 4.0, estrella: 3.6 };
+// Widest word of each name in Anton em units (AGUACHILE, CAMARONES, MOLCAJETE, ESTRELLA): names fill their column.
+const WORD_EM = { aguachile: 4.3, bbq: 4.5, molcajete: 4.4, estrella: 3.7 };
+const em = (id) => WORD_EM[id] || 4.6;
+
+/** Size of a w x h image fitted (contain) in a box of aspect `box`, as % of the box. */
+function fit(w, h, box) {
+  const r = w / h;
+  return r >= box ? { wp: 100, hp: (box / r) * 100 } : { wp: (r / box) * 100, hp: 100 };
+}
 
 function useMedia(query) {
   const [match, setMatch] = useState(() => typeof window !== "undefined" && window.matchMedia(query).matches);
@@ -80,26 +96,44 @@ function Specs({ specs, className = "" }) {
   );
 }
 
-/* Free-floating cut-out: no frame, no mask, just the product and its shadow. */
-function Product({ s, className = "", eager = false }) {
+/* HD cut-out fitted in the product box from its real size, with neutral studio shadow. */
+function Plate({ s, eager = false }) {
+  const f = fit(s.w, s.h, BOX);
   return (
-    <img
-      src={s.img}
-      width={s.w}
-      height={s.h}
-      alt={ALT[s.id]}
-      loading={eager ? undefined : "lazy"}
-      decoding="async"
-      className={`h-full w-full object-contain drop-shadow-[0_40px_36px_rgba(12,21,56,0.42)] ${className}`}
-    />
+    <div style={{ width: `${f.wp}%`, maxWidth: s.w, aspectRatio: `${s.w} / ${s.h}` }}>
+      <img
+        src={s.img}
+        width={s.w}
+        height={s.h}
+        alt={ALT[s.id] || s.name}
+        loading={eager ? undefined : "lazy"}
+        decoding="async"
+        className="h-full w-full object-contain"
+        style={{ filter: STUDIO }}
+      />
+    </div>
   );
 }
 
-/* Soft contact shadow under a floating product (decorative ellipse, not an image mask). */
-function Contact({ cls }) {
+/* Soft contact shadow placed under the plate's real bottom edge (decorative). */
+function Contact({ s, cls = "", style }) {
+  const f = fit(s.w, s.h, BOX);
   return (
-    <div aria-hidden="true" className="absolute inset-x-0 -bottom-[4%] flex justify-center">
-      <div className={`${cls} h-8 w-[60%] rounded-[50%] bg-abismo/45 blur-2xl`} />
+    <span
+      aria-hidden="true"
+      className={`absolute block h-[9%] ${cls}`}
+      style={{ left: `${50 - f.wp * 0.36}%`, width: `${f.wp * 0.72}%`, top: `${50 + f.hp / 2 - 6}%`, ...style }}
+    >
+      <span className="sab-breathe block h-full w-full rounded-[50%] bg-black/35 blur-2xl" />
+    </span>
+  );
+}
+
+function Ilu({ i, className, imgClass = "" }) {
+  const it = ILUS[i % ILUS.length];
+  return (
+    <div aria-hidden="true" className={`pointer-events-none absolute ${className}`}>
+      <img src={it.src} width={it.w} height={it.h} alt="" loading="lazy" decoding="async" className={`w-full ${imgClass}`} />
     </div>
   );
 }
@@ -117,7 +151,7 @@ function Stage({ active, goTo }) {
           {/* Giant outlined names: only behind the product half, faded in from its left edge */}
           <div
             aria-hidden="true"
-            className="pointer-events-none absolute bottom-0 left-1/2 right-0 top-0 flex items-center overflow-hidden opacity-25 [mask-image:linear-gradient(to_right,transparent,black_18%)]"
+            className="pointer-events-none absolute bottom-0 left-1/2 right-0 top-0 flex items-center overflow-hidden opacity-20 [mask-image:linear-gradient(to_right,transparent,black_18%)]"
           >
             <div
               className="sab-track display outline-text flex w-max gap-[0.5em] whitespace-nowrap pl-[6vw]"
@@ -129,19 +163,25 @@ function Stage({ active, goTo }) {
             </div>
           </div>
 
+          {/* Brand line art drifting behind the product half (never under the text column) */}
+          <div aria-hidden="true" className="pointer-events-none absolute inset-y-0 left-1/2 right-0 overflow-hidden">
+            <Ilu i={0} className="-right-[3%] top-[7%] w-[min(26vw,440px)]" imgClass="sab-ilu opacity-[0.16]" />
+            <Ilu i={2} className="bottom-[12%] right-[6%] w-[min(21vw,360px)]" imgClass="sab-ilu opacity-[0.14]" />
+          </div>
+
           <div className="relative mx-auto grid h-full max-w-[1400px] grid-cols-12 gap-x-8 px-8 pb-28 pt-28">
-            {/* Text cols 1-6: every sabor stacked in the same cell, only one visible */}
-            <div className="col-span-6 grid items-center self-center" style={{ containerType: "inline-size" }}>
+            {/* Text: every sabor stacked in the same cell, only one visible */}
+            <div className="col-span-6 grid items-center self-center xl:col-span-5" style={{ containerType: "inline-size" }}>
               {SABORES.map((s, i) => (
                 <article
                   key={s.id}
                   className="sab-copy col-start-1 row-start-1"
-                  style={{ color: s.ink, ...(i === 0 ? null : { visibility: "hidden", opacity: 0 }) }}
+                  style={{ color: s.ink, ...(i === 0 ? null : HIDDEN) }}
                 >
                   <h3
                     aria-label={s.name}
                     className="display display-stack"
-                    style={{ fontSize: `min(${(80 / WORD_EM[s.id]).toFixed(2)}cqw, 13dvh, 8.5rem)` }}
+                    style={{ fontSize: `min(${(80 / em(s.id)).toFixed(2)}cqw, 13dvh, 8.5rem)` }}
                   >
                     <Name text={s.name} charClass="sab-char" />
                   </h3>
@@ -152,22 +192,35 @@ function Stage({ active, goTo }) {
               ))}
             </div>
 
-            {/* Product cols 7-12: one floating cut-out at a time */}
-            <div className="relative col-span-6 flex items-center justify-start pl-4">
-              <div className="sab-prod-in relative aspect-[4/3] w-[min(46vw,720px,82dvh)]">
-                <Contact cls="sab-contact" />
-                <div className="sab-turn h-full w-full">
-                  <div className="sab-float h-full w-full">
-                    {SABORES.map((s, i) => (
-                      <div
-                        key={s.id}
-                        aria-hidden={i === active ? undefined : "true"}
-                        className="sab-prod absolute inset-0 flex items-center justify-center"
-                        style={i === 0 ? undefined : { visibility: "hidden", opacity: 0 }}
-                      >
-                        <Product s={s} eager={i === 0} />
+            {/* Product: one floating HD cut-out at a time, big */}
+            <div className="relative col-span-6 flex items-center justify-start xl:col-span-7">
+              <div
+                className="sab-prod-in relative w-[min(46vw,900px,calc((100dvh-240px)*1.5))] xl:w-[min(54vw,900px,calc((100dvh-240px)*1.5))]"
+                style={{ aspectRatio: BOX }}
+              >
+                <div className="sab-shadows pointer-events-none absolute inset-0">
+                  {SABORES.map((s, i) => (
+                    <Contact key={s.id} s={s} cls="sab-contact" style={i === 0 ? null : HIDDEN} />
+                  ))}
+                </div>
+                <div className="sab-tilt h-full w-full">
+                  <div className="sab-turn h-full w-full">
+                    <div className="sab-punch h-full w-full">
+                      <div className="sab-float h-full w-full">
+                        <div className="sab-spin relative h-full w-full will-change-transform">
+                          {SABORES.map((s, i) => (
+                            <div
+                              key={s.id}
+                              aria-hidden={i === active ? undefined : "true"}
+                              className="sab-prod absolute inset-0 flex items-center justify-center"
+                              style={i === 0 ? undefined : HIDDEN}
+                            >
+                              <Plate s={s} eager={i === 0} />
+                            </div>
+                          ))}
+                        </div>
                       </div>
-                    ))}
+                    </div>
                   </div>
                 </div>
               </div>
@@ -210,25 +263,33 @@ function Stage({ active, goTo }) {
 function Stacked() {
   return (
     <div>
-      {SABORES.map((s) => (
+      {SABORES.map((s, i) => (
         <article key={s.id} style={{ backgroundColor: s.color, color: s.ink }} className="sab-block relative overflow-hidden">
           <div className="mx-auto grid max-w-[1400px] grid-cols-1 px-4 py-16 md:px-8 md:py-24 lg:grid-flow-dense lg:grid-cols-12 lg:items-center lg:gap-x-8">
             <h3
               aria-label={s.name}
               className="display display-stack lg:col-span-6 lg:col-start-1"
-              style={{ fontSize: `min(${(86 / WORD_EM[s.id]).toFixed(2)}vw, 8rem)` }}
+              style={{ fontSize: `min(${(86 / em(s.id)).toFixed(2)}vw, 8rem)` }}
             >
               <Name text={s.name} charClass="sab-m-char" />
             </h3>
             <p className="sab-m-reveal mt-4 text-pretty text-2xl font-bold leading-tight md:text-3xl lg:col-span-6 lg:col-start-1">
               {s.line}
             </p>
-            <div className="relative mx-auto my-10 w-[88vw] max-w-[640px] lg:col-span-6 lg:col-start-7 lg:row-span-4 lg:row-start-1 lg:my-0 lg:w-full lg:max-w-[720px]">
-              <div className="sab-m-prod relative aspect-[4/3] w-full">
-                <Contact cls="" />
+            <div className="relative mx-auto my-10 w-[92vw] max-w-[680px] lg:col-span-6 lg:col-start-7 lg:row-span-4 lg:row-start-1 lg:my-0 lg:w-full lg:max-w-[760px]">
+              {/* Line art behind the plate, bleeding off the right edge only */}
+              <Ilu i={i} className="-right-[16%] -top-[4%] w-[58%]" imgClass="sab-m-ilu opacity-[0.16]" />
+              <div className="sab-m-prod relative w-full" style={{ aspectRatio: BOX }}>
+                <div className="pointer-events-none absolute inset-0">
+                  <Contact s={s} />
+                </div>
                 <div className="sab-m-turn h-full w-full">
-                  <div className="sab-m-float h-full w-full">
-                    <Product s={s} />
+                  <div className="sab-m-punch h-full w-full">
+                    <div className="sab-m-float relative h-full w-full">
+                      <div className="absolute inset-0 flex items-center justify-center">
+                        <Plate s={s} />
+                      </div>
+                    </div>
                   </div>
                 </div>
               </div>
@@ -252,8 +313,26 @@ export default function Sabores() {
   const pinned = useMedia(PIN_QUERY);
 
   useGSAP(
-    () => {
+    (_ctx, contextSafe) => {
       const mm = gsap.matchMedia();
+
+      // Landing squash + elastic settle (time based, also while scrubbing).
+      const settle = contextSafe((el) => {
+        gsap.fromTo(
+          el,
+          { scaleX: 1.05, scaleY: 0.93, transformOrigin: "50% 85%" },
+          { scaleX: 1, scaleY: 1, duration: 1, ease: "elastic.out(1, 0.35)", overwrite: true }
+        );
+      });
+
+      const drift = (els) =>
+        els.forEach((el, i) => {
+          gsap.fromTo(
+            el,
+            { rotation: i % 2 ? 7 : -7, x: 0, y: 0 },
+            { rotation: i % 2 ? -7 : 7, x: i % 2 ? -20 : 18, y: i % 2 ? 18 : -16, duration: 12 + i * 3, ease: "sine.inOut", yoyo: true, repeat: -1 }
+          );
+        });
 
       if (pinned) {
         mm.add(PIN_QUERY, () => {
@@ -262,22 +341,53 @@ export default function Sabores() {
           const q = gsap.utils.selector(stage);
           const copies = q(".sab-copy");
           const prods = q(".sab-prod");
+          const shadows = q(".sab-contact");
+          const punch = q(".sab-punch")[0];
           const track = q(".sab-track")[0];
 
-          // Idle: the product floats and breathes, independent of scroll.
-          gsap.set(q(".sab-turn"), { transformPerspective: 1000 });
-          gsap.set(q(".sab-float"), { y: 12, rotation: -2 });
-          gsap
-            .timeline({ repeat: -1, yoyo: true, defaults: { duration: 2.8, ease: "sine.inOut" } })
-            .to(q(".sab-float"), { y: -12, rotation: 2 }, 0)
-            .fromTo(q(".sab-contact"), { scaleX: 1, opacity: 0.6 }, { scaleX: 0.75, opacity: 0.3 }, 0);
+          // Idle appetite: float + breathing shadow (same period), slow +/-2deg turn (own period), drifting line art.
+          gsap.set(q(".sab-turn"), { transformPerspective: 1100 });
+          gsap.fromTo(q(".sab-float"), { y: 12 }, { y: -12, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
+          gsap.fromTo(
+            q(".sab-breathe"),
+            { scaleX: 1, opacity: 1 },
+            { scaleX: 0.76, opacity: 0.55, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 }
+          );
+          gsap.fromTo(q(".sab-spin"), { rotation: -2 }, { rotation: 2, duration: 7, ease: "sine.inOut", yoyo: true, repeat: -1 });
+          drift(q(".sab-ilu"));
 
-          // Entrance before the pin: name rises, product spins in. Short, once.
+          // Pointer tilt +/-12deg (fine pointer).
+          let offPointer = () => {};
+          if (window.matchMedia("(pointer: fine)").matches) {
+            const tilt = q(".sab-tilt")[0];
+            gsap.set(tilt, { transformPerspective: 1000 });
+            const rx = gsap.quickTo(tilt, "rotationX", { duration: 0.8, ease: "power3.out" });
+            const ry = gsap.quickTo(tilt, "rotationY", { duration: 0.8, ease: "power3.out" });
+            const clamp = gsap.utils.clamp(-1, 1);
+            const move = (e) => {
+              const r = tilt.getBoundingClientRect();
+              ry(clamp((e.clientX - (r.left + r.width / 2)) / (window.innerWidth / 2)) * 12);
+              rx(-clamp((e.clientY - (r.top + r.height / 2)) / (window.innerHeight / 2)) * 12);
+            };
+            const leave = () => {
+              rx(0);
+              ry(0);
+            };
+            stage.addEventListener("pointermove", move);
+            stage.addEventListener("pointerleave", leave);
+            offPointer = () => {
+              stage.removeEventListener("pointermove", move);
+              stage.removeEventListener("pointerleave", leave);
+            };
+          }
+
+          // Entrance before the pin: name rises, the first plate drops in and settles. Short, once.
           gsap
             .timeline({ scrollTrigger: { trigger: stage, start: "top 80%", once: true } })
             .from(copies[0].querySelectorAll(".sab-char"), { yPercent: 115, duration: 0.6, stagger: 0.03, ease: "power3.out" }, 0)
             .from(copies[0].querySelectorAll(".sab-reveal"), { y: 30, opacity: 0, duration: 0.5, stagger: 0.07, ease: "power2.out" }, 0.15)
-            .from(q(".sab-prod-in"), { xPercent: -30, rotation: -30, scale: 0.7, opacity: 0, duration: 1, ease: "back.out(1.4)" }, 0);
+            .from(q(".sab-prod-in"), { yPercent: -30, rotation: -10, scale: 0.88, autoAlpha: 0, duration: 0.6, ease: "power2.in" }, 0.05)
+            .call(() => settle(punch), null, 0.65);
 
           const tl = gsap.timeline({
             defaults: { ease: "none" },
@@ -300,8 +410,8 @@ export default function Sabores() {
             },
           });
 
-          // Continuous: the product turns and tilts with scroll, the outlined names slide behind it.
-          tl.fromTo(q(".sab-turn"), { rotation: -8, rotationY: -14 }, { rotation: 8, rotationY: 14, duration: LAST }, 0).to(
+          // Continuous: the plate turns gently with scroll, the outlined names slide behind it.
+          tl.fromTo(q(".sab-turn"), { rotation: -4, rotationY: -10 }, { rotation: 4, rotationY: 10, duration: LAST }, 0).to(
             track,
             { x: () => -Math.max(0, track.scrollWidth - window.innerWidth * 0.45), duration: LAST },
             0
@@ -319,19 +429,25 @@ export default function Sabores() {
               .fromTo(copies[i], { autoAlpha: 0, y: 0 }, { autoAlpha: 1, duration: 0.02 }, at + 0.22)
               .fromTo(chars, { yPercent: 115 }, { yPercent: 0, duration: 0.28, stagger: 0.015, ease: "power3.out" }, at + 0.22)
               .fromTo(reveals, { y: 34, opacity: 0 }, { y: 0, opacity: 1, duration: 0.24, stagger: 0.04, ease: "power2.out" }, at + 0.3)
-              .to(prods[i - 1], { xPercent: 40, rotation: 25, scale: 0.7, autoAlpha: 0, duration: 0.3, ease: "power2.in" }, at)
+              .to(prods[i - 1], { xPercent: 35, rotation: 14, scale: 0.82, autoAlpha: 0, duration: 0.3, ease: "power2.in" }, at)
+              .to(shadows[i - 1], { autoAlpha: 0, duration: 0.2 }, at)
               .fromTo(
                 prods[i],
-                { xPercent: -60, rotation: -25, scale: 0.7, autoAlpha: 0 },
-                { xPercent: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.42, ease: "back.out(1.6)" },
+                { xPercent: -18, yPercent: -32, rotation: -12, scale: 0.86, autoAlpha: 0 },
+                { xPercent: 0, yPercent: 0, rotation: 0, scale: 1, autoAlpha: 1, duration: 0.4, ease: "power2.in" },
                 at + 0.2
-              );
+              )
+              .fromTo(shadows[i], { autoAlpha: 0, scale: 0.5 }, { autoAlpha: 1, scale: 1, duration: 0.25, ease: "power2.out" }, at + 0.4)
+              .call(() => {
+                if ((tl.scrollTrigger?.direction ?? 1) > 0) settle(punch);
+              }, null, at + 0.6);
           }
           tl.set({}, {}, LAST); // timeline length == step count, so snap 1/LAST lands on rest states
 
           stRef.current = tl.scrollTrigger;
 
           return () => {
+            offPointer();
             stRef.current = null;
             activeRef.current = 0;
             setActive(0);
@@ -339,6 +455,7 @@ export default function Sabores() {
         });
       } else {
         mm.add(MOBILE_MOTION, () => {
+          drift(gsap.utils.toArray(".sab-m-ilu", root.current));
           gsap.utils.toArray(".sab-block", root.current).forEach((block, i) => {
             const dir = i % 2 === 0 ? 1 : -1;
             const prod = block.querySelector(".sab-m-prod");
@@ -346,28 +463,36 @@ export default function Sabores() {
               .timeline({ scrollTrigger: { trigger: block, start: "top 88%", once: true } })
               .from(block.querySelectorAll(".sab-m-char"), { yPercent: 115, duration: 0.5, stagger: 0.025, ease: "power3.out" }, 0)
               .from(block.querySelectorAll(".sab-m-reveal"), { y: 24, opacity: 0, duration: 0.45, stagger: 0.06, ease: "power2.out" }, 0.1);
+            // Plate drops in and lands with a settle bounce.
             gsap.from(prod, {
-              xPercent: -40 * dir,
-              rotation: -25 * dir,
-              scale: 0.75,
-              opacity: 0,
-              duration: 0.8,
-              ease: "back.out(1.5)",
+              xPercent: -12 * dir,
+              yPercent: -28,
+              rotation: -10 * dir,
+              scale: 0.88,
+              autoAlpha: 0,
+              duration: 0.55,
+              ease: "power2.in",
               scrollTrigger: { trigger: prod, start: "top 88%", once: true },
+              onComplete: () => settle(block.querySelector(".sab-m-punch")),
             });
-            // Idle float + scroll-driven turn and tilt.
+            // Idle float + slow +/-2deg turn + gentle scroll tilt.
             gsap.set(block.querySelector(".sab-m-turn"), { transformPerspective: 900 });
             gsap.fromTo(
               block.querySelector(".sab-m-float"),
               { y: 8, rotation: -2 },
-              { y: -8, rotation: 2, duration: 2.6, ease: "sine.inOut", yoyo: true, repeat: -1 }
+              { y: -8, rotation: 2, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 }
+            );
+            gsap.fromTo(
+              block.querySelector(".sab-breathe"),
+              { scaleX: 1, opacity: 1 },
+              { scaleX: 0.8, opacity: 0.6, duration: 2.8, ease: "sine.inOut", yoyo: true, repeat: -1 }
             );
             gsap.fromTo(
               block.querySelector(".sab-m-turn"),
-              { rotation: -8 * dir, rotationY: -12 * dir },
+              { rotation: -4 * dir, rotationY: -8 * dir },
               {
-                rotation: 8 * dir,
-                rotationY: 12 * dir,
+                rotation: 4 * dir,
+                rotationY: 8 * dir,
                 ease: "none",
                 scrollTrigger: { trigger: block, start: "top bottom", end: "bottom top", scrub: true },
               }

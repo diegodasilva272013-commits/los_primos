@@ -50,3 +50,16 @@ CONTRAST (computed): marino on cielo 4.67 OK · marino on coral 4.61 OK · marin
 - Touch targets >= 48px. Mobile (<768px) explicit single column, no page horizontal overflow at 390px.
 - Images: width/height attrs, Spanish alt, loading="lazy" except hero.
 - Only ONE marquee on the page: the Ticker band (owned by the Hero builder).
+
+## v3 (client feedback): FOOD MUST LOOK "WOW, QUIERO COMER ESTO"
+- NEW HD assets: /public/food/*.webp = 25 professional transparent cut-out dishes up to 1600px (see PLATILLOS in data.js,
+  every item has img/w/h). Use THESE everywhere instead of /img/* and /cut/* (old low-res). /public/photo/*.webp = real
+  restaurant lifestyle photos (1800px). /public/ilu/{crab,barco,almeja}.webp = the brand's white line illustrations
+  (decorative, low opacity, rotate/float).
+- Cards: the FOOD FILLS THE WHOLE CARD. No small inset images, no padding frames, no circles. A card is a brand-color
+  panel where the cut-out plate is scaled so it fills/bleeds past the card edges (overflow-hidden), with soft studio
+  lighting (radial highlight behind the plate) and text overlaid on a bottom gradient scrim (marino) in blanco.
+- Appetite appeal: big, sharp, never upscaled beyond the file's natural width; subtle hover zoom/rotate; light sweep.
+- VIDEO: each PLATILLOS item has `video` (null for now; later "/video/<id>.mp4"). The Vitrina must play it (muted loop
+  playsInline autoplay on hover in card, full player with sound in modal). When null, show the HD photo with a slow
+  Ken Burns move. Never show "coming soon" text.

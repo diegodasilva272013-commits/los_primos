@@ -8,20 +8,27 @@ gsap.registerPlugin(useGSAP);
 
 /*
   Layout family: horizontal pan (taste-skill 5.B) on a full-bleed amarillo field.
-  md+ with motion: the section pins at "top top" and the inner track scrubs on x until the
-  payoff panel sits flush right. Cards tilt/skew with scroll velocity. The Estrella card shows
-  its floating cut-out; every other combo shows its photo in a rounded-[32px] 4/3 frame that
-  opens with a clip-path inset reveal. The $258 sticker (a badge, not an image) spins with scroll.
-  Mobile or reduced motion: intro stacked above a native scroll-snap carousel, then the payoff.
-  Text on amarillo is always marino (9.7:1). No mascot here (it lives only in CtaFinal).
+  v3: every card is a brand-color panel where the HD cut-out plate FILLS the card and bleeds past its
+  edges (overflow-hidden), lit by a soft radial studio light with a contact shadow under the plate.
+  Name, items and the $258 pill sit on a marino scrim at the bottom (blanco on abismo/marino, 13:1+).
+  md+ with motion: the section pins and the track scrubs on x; cards skew with scroll velocity and
+  each plate drifts inside its card (containerAnimation parallax).
+  Mobile or reduced motion: intro, then a native scroll-snap carousel of the same cards, then payoff.
+  Text on amarillo is always marino (9.7:1).
 */
 
 const PAN = "(min-width: 768px) and (prefers-reduced-motion: no-preference)";
 const MOBILE = "(max-width: 767px) and (prefers-reduced-motion: no-preference)";
 const MOTION = "(prefers-reduced-motion: no-preference)";
 
-const FRAME_FROM = "inset(100% 0% 0% 0% round 32px)";
-const FRAME_TO = "inset(0% 0% 0% 0% round 32px)";
+/* Panel color per card. `num` = ink for the decorative index number (contrast-safe per DESIGN.md). */
+const PANELS = [
+  { bg: "bg-cielo", num: "text-marino", light: "rgb(255 255 255 / 0.55)" },
+  { bg: "bg-coral", num: "text-marino", light: "rgb(255 240 220 / 0.55)" },
+  { bg: "bg-marino-2", num: "text-blanco", light: "rgb(38 160 220 / 0.55)" },
+  { bg: "bg-cielo-2", num: "text-abismo", light: "rgb(255 255 255 / 0.5)" },
+  { bg: "bg-abismo", num: "text-blanco", light: "rgb(246 216 64 / 0.32)" },
+];
 
 /** Accessible char split: screen readers get the plain string, chars are decorative. */
 function Chars({ text }) {
@@ -78,6 +85,80 @@ function WhatsCta({ className = "" }) {
   );
 }
 
+/*
+  Card layers (outer to inner):
+  article[data-card] entrance > [data-tilt] velocity skew + panel > plate position (CSS) >
+  [data-par] pan parallax > hover zoom (CSS group-hover) > img[data-floaty] idle float.
+*/
+function ComboCard({ combo, i }) {
+  const p = PANELS[i % PANELS.length];
+  const alt = `Combo ${combo.name}: ${combo.items.toLowerCase()}`;
+  return (
+    <article
+      data-card
+      className="h-[min(70vh,560px)] w-[82vw] max-w-[440px] shrink-0 snap-start md:h-[min(72dvh,640px)] md:w-[min(34vw,520px)] md:max-w-none"
+    >
+      <div
+        data-tilt
+        className={`group relative isolate h-full overflow-hidden rounded-[32px] ${p.bg} shadow-[0_40px_70px_-30px_rgb(12_21_56/0.6)] will-change-transform`}
+      >
+        {/* Studio light: soft radial highlight behind the plate */}
+        <div
+          aria-hidden="true"
+          className="absolute inset-0 -z-10"
+          style={{ background: `radial-gradient(70% 55% at 50% 36%, ${p.light}, transparent 72%)` }}
+        />
+
+        {/* Decorative index number, top-left above the plate */}
+        <span aria-hidden="true" className={`display absolute left-6 top-5 z-20 text-3xl tabular-nums md:left-7 md:top-6 md:text-4xl ${p.num}`}>
+          0{i + 1}
+        </span>
+
+        {/* Plate: ~145% of the card width, centered high, bleeding past both edges */}
+        <div className="absolute left-1/2 top-[40%] w-[145%] -translate-x-1/2 -translate-y-1/2">
+          <div data-par className="will-change-transform">
+            <div className="relative isolate transition-transform duration-[900ms] ease-[var(--ease-out-expo)] group-hover:-rotate-2 group-hover:scale-[1.06]">
+              {/* Contact shadow under the plate */}
+              <div
+                aria-hidden="true"
+                className="absolute inset-x-[14%] bottom-[-2%] h-[20%] -z-10 rounded-[50%] bg-[radial-gradient(closest-side,rgb(6_10_30/0.55),transparent)]"
+              />
+              <img
+                data-floaty
+                src={combo.img}
+                alt={alt}
+                width={combo.w}
+                height={combo.h}
+                loading="lazy"
+                decoding="async"
+                className="h-auto w-full drop-shadow-[0_26px_30px_rgb(6_10_30/0.45)]"
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Light sweep on hover */}
+        <div
+          aria-hidden="true"
+          className="pointer-events-none absolute inset-y-0 left-0 z-10 w-1/2 -translate-x-[120%] skew-x-[-18deg] bg-gradient-to-r from-transparent via-white/25 to-transparent transition-transform duration-[1100ms] ease-[var(--ease-out-expo)] group-hover:translate-x-[260%]"
+        />
+
+        {/* Bottom scrim + copy (blanco on abismo/marino) */}
+        <div aria-hidden="true" className="absolute inset-x-0 bottom-0 z-10 h-[58%] bg-gradient-to-t from-abismo via-marino/85 to-transparent" />
+        <div className="absolute inset-x-0 bottom-0 z-20 p-6 md:p-7">
+          <div className="flex flex-wrap items-end justify-between gap-x-4 gap-y-2">
+            <h3 className="display text-[clamp(2.75rem,4vw,4rem)] text-blanco">{combo.name}</h3>
+            <span className="mb-1 rounded-full bg-amarillo px-4 py-1.5 text-base font-bold tabular-nums text-marino">
+              {COMBO_PRICE}
+            </span>
+          </div>
+          <p className="mt-3 text-pretty text-base leading-relaxed text-blanco/85">{combo.items}</p>
+        </div>
+      </div>
+    </article>
+  );
+}
+
 export default function Combos() {
   const wrap = useRef(null);
   const track = useRef(null);
@@ -104,14 +185,23 @@ export default function Combos() {
           ease: "back.out(1.7)",
           scrollTrigger: { trigger: wrap.current, start: "top 88%", once: true },
         });
-        // The Estrella cut-out floats on its own (no frame).
-        gsap.to(q("[data-floaty]"), { y: -14, rotation: 3, duration: 2.4, ease: "sine.inOut", yoyo: true, repeat: -1 });
+        q("[data-floaty]").forEach((img, i) => {
+          gsap.to(img, {
+            y: -10,
+            rotation: i % 2 ? -1.5 : 1.5,
+            duration: 2.4 + (i % 3) * 0.4,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+            delay: i * 0.2,
+          });
+        });
 
         const offs = q("[data-magnetic]").map((el) => magnetic(el));
         return () => offs.forEach((off) => off());
       });
 
-      // Desktop: pinned horizontal pan + velocity tilt + containerAnimation details.
+      // Desktop: pinned horizontal pan + velocity skew + plate parallax inside each card.
       mm.add(PAN, () => {
         const el = track.current;
         // clientWidth excludes the vertical scrollbar, so the payoff panel ends flush right.
@@ -120,7 +210,7 @@ export default function Combos() {
         const tilts = q("[data-tilt]");
         const setSkew = gsap.quickSetter(tilts, "skewX", "deg");
         const setRot = gsap.quickSetter(tilts, "rotation", "deg");
-        const clampSkew = gsap.utils.clamp(-9, 9);
+        const clampSkew = gsap.utils.clamp(-8, 8);
         const proxy = { skew: 0 };
 
         const pan = gsap.to(el, {
@@ -134,7 +224,7 @@ export default function Combos() {
             scrub: 1,
             invalidateOnRefresh: true,
             onUpdate: (self) => {
-              const s = clampSkew(self.getVelocity() / -260);
+              const s = clampSkew(self.getVelocity() / -280);
               if (Math.abs(s) > Math.abs(proxy.skew)) {
                 proxy.skew = s;
                 gsap.to(proxy, {
@@ -144,7 +234,7 @@ export default function Combos() {
                   overwrite: true,
                   onUpdate: () => {
                     setSkew(proxy.skew);
-                    setRot(proxy.skew * 0.35);
+                    setRot(proxy.skew * 0.3);
                   },
                 });
               }
@@ -163,77 +253,58 @@ export default function Combos() {
         gsap.to(q("[data-ring]"), { rotation: 720, transformOrigin: "50% 50%", ease: "none", scrollTrigger: spinST });
         gsap.fromTo(q("[data-price]"), { rotation: -14 }, { rotation: 10, ease: "none", scrollTrigger: { ...spinST } });
 
-        // The Estrella cut-out turns gently as it crosses the viewport.
-        q("[data-spin]").forEach((sp) => {
+        // Plate parallax: each plate travels against the pan while its card crosses the viewport.
+        q("[data-par]").forEach((par, i) => {
           gsap.fromTo(
-            sp,
-            { rotation: -12 },
+            par,
+            { xPercent: 9, rotation: i % 2 ? 5 : -5 },
             {
-              rotation: 12,
+              xPercent: -9,
+              rotation: i % 2 ? -3 : 3,
               ease: "none",
-              scrollTrigger: { trigger: sp, containerAnimation: pan, start: "left right", end: "right left", scrub: true },
-            }
-          );
-        });
-
-        // Photos inside their frames drift (scale) as they cross; the frame itself stays still.
-        q("[data-zoom]").forEach((img) => {
-          gsap.fromTo(
-            img,
-            { scale: 1.18 },
-            {
-              scale: 1,
-              ease: "none",
-              scrollTrigger: { trigger: img, containerAnimation: pan, start: "left right", end: "right left", scrub: true },
+              scrollTrigger: {
+                trigger: par.closest("[data-card]"),
+                containerAnimation: pan,
+                start: "left right",
+                end: "right left",
+                scrub: true,
+              },
             }
           );
         });
 
         const vw = document.documentElement.clientWidth;
 
-        // Frame reveals: clip-path inset opens once, played (never scrubbed) so it always completes.
-        q("[data-frame]").forEach((frame) => {
-          const visible = frame.getBoundingClientRect().left < vw;
-          gsap.fromTo(
-            frame,
-            { clipPath: FRAME_FROM },
-            {
-              clipPath: FRAME_TO,
-              duration: 1.1,
-              ease: "expo.out",
-              scrollTrigger: visible
-                ? { trigger: wrap.current, start: "top 88%", once: true }
-                : { trigger: frame, containerAnimation: pan, start: "left 100%", once: true },
-            }
-          );
-        });
-
         // Cards that start offscreen rise and straighten as they slide in (played, not scrubbed).
         q("[data-card]").forEach((card, i) => {
           if (card.offsetLeft < vw) return;
           gsap.from(card, {
             y: 120,
-            rotation: i % 2 ? -8 : 8,
+            rotation: i % 2 ? -7 : 7,
             opacity: 0,
             duration: 0.9,
             ease: "back.out(1.4)",
-            scrollTrigger: { trigger: card, containerAnimation: pan, start: "left 100%", toggleActions: "play none none none" },
+            scrollTrigger: { trigger: card, containerAnimation: pan, start: "left 100%", once: true },
           });
         });
 
-        // Payoff copy and CTA: played when the panel enters, ends at opacity 1 regardless of scroll stop.
+        // Payoff copy and CTA: played once when the panel enters, always ends at opacity 1.
         const payoff = q("[data-payoff]")[0];
-        gsap.from(q("[data-payoff-line]"), {
-          y: 70,
-          opacity: 0,
-          duration: 0.9,
-          ease: "expo.out",
-          stagger: 0.12,
-          scrollTrigger: { trigger: payoff, containerAnimation: pan, start: "left 100%", toggleActions: "play none none none" },
-        });
+        gsap.fromTo(
+          q("[data-payoff-line]"),
+          { y: 70, opacity: 0 },
+          {
+            y: 0,
+            opacity: 1,
+            duration: 0.9,
+            ease: "expo.out",
+            stagger: 0.12,
+            scrollTrigger: { trigger: payoff, containerAnimation: pan, start: "left 100%", once: true },
+          }
+        );
       });
 
-      // Mobile: sticker spins with page scroll, carousel cards slide in once, frames open.
+      // Mobile: sticker spins with page scroll, carousel cards slide in once.
       mm.add(MOBILE, () => {
         gsap.to(q("[data-ring]"), {
           rotation: 540,
@@ -250,17 +321,6 @@ export default function Combos() {
           stagger: 0.1,
           scrollTrigger: { trigger: carousel, start: "top 88%", once: true },
         });
-        gsap.fromTo(
-          q("[data-frame]"),
-          { clipPath: FRAME_FROM },
-          {
-            clipPath: FRAME_TO,
-            duration: 1.1,
-            ease: "expo.out",
-            stagger: 0.1,
-            scrollTrigger: { trigger: carousel, start: "top 88%", once: true },
-          }
-        );
         gsap.from(q("[data-payoff-m]"), {
           y: 40,
           opacity: 0,
@@ -302,10 +362,10 @@ export default function Combos() {
       >
         <div
           ref={track}
-          className="relative flex w-max items-stretch gap-4 px-4 will-change-transform md:gap-6 md:pl-[max(2rem,calc((100vw_-_1400px)/2_+_2rem))] md:pr-8 md:motion-safe:h-[100dvh] md:motion-safe:items-center md:motion-safe:gap-[4.5vw] md:motion-safe:pb-10 md:motion-safe:pt-24"
+          className="relative flex w-max items-stretch gap-4 px-4 will-change-transform md:gap-6 md:pl-[max(2rem,calc((100vw_-_1400px)/2_+_2rem))] md:pr-8 md:motion-safe:h-[100dvh] md:motion-safe:items-center md:motion-safe:gap-[3vw] md:motion-safe:pb-10 md:motion-safe:pt-24"
         >
           {/* Desktop intro panel, first stop of the pan */}
-          <div className="hidden w-[min(50vw,820px)] shrink-0 flex-col justify-center md:motion-safe:flex">
+          <div className="hidden w-[min(46vw,780px)] shrink-0 flex-col justify-center md:motion-safe:flex">
             <h2 className="display text-[clamp(6rem,14vw,14rem)]">
               <Chars text="Combos" />
             </h2>
@@ -317,65 +377,12 @@ export default function Combos() {
             </div>
           </div>
 
-          {COMBOS.map((combo, i) => {
-            const isStar = combo.name === "Estrella";
-            const alt = `Combo ${combo.name}: ${combo.items.toLowerCase()}`;
-            return (
-              <article key={combo.name} data-card className="w-[78vw] shrink-0 snap-start md:w-[clamp(300px,28vw,420px)]">
-                <div
-                  data-tilt
-                  className="flex h-full flex-col rounded-[32px] bg-blanco p-5 shadow-[0_30px_60px_-30px_rgb(27_39_102/0.5)] will-change-transform md:p-6"
-                >
-                  <div className="flex items-center justify-between px-1">
-                    <span className="display text-2xl tabular-nums text-marino/70">0{i + 1}</span>
-                    <span className="rounded-full bg-amarillo px-3 py-1 text-sm font-bold tabular-nums text-marino">
-                      {COMBO_PRICE}
-                    </span>
-                  </div>
-
-                  {isStar ? (
-                    // Cut-out floats freely in the same 4/3 slot (no frame, no mask).
-                    <div className="relative mx-auto mt-4 flex aspect-[4/3] w-full max-w-[min(100%,46dvh)] items-center justify-center">
-                      <div data-spin className="w-[96%]">
-                        <img
-                          data-floaty
-                          src="/cut/estrella.webp"
-                          alt={alt}
-                          width="702"
-                          height="416"
-                          loading="lazy"
-                          decoding="async"
-                          className="h-auto w-full drop-shadow-[0_22px_26px_rgb(27_39_102/0.35)]"
-                        />
-                      </div>
-                    </div>
-                  ) : (
-                    <div
-                      data-frame
-                      className="relative mx-auto mt-4 aspect-[4/3] w-full max-w-[min(100%,46dvh)] overflow-hidden rounded-[32px] bg-espuma"
-                    >
-                      <img
-                        data-zoom
-                        src={combo.img}
-                        alt={alt}
-                        width="560"
-                        height="420"
-                        loading="lazy"
-                        decoding="async"
-                        className="h-full w-full object-cover"
-                      />
-                    </div>
-                  )}
-
-                  <h3 className="display mt-6 px-1 text-[clamp(2.75rem,4vw,4rem)]">{combo.name}</h3>
-                  <p className="mt-3 px-1 text-base leading-relaxed text-marino/80">{combo.items}</p>
-                </div>
-              </article>
-            );
-          })}
+          {COMBOS.map((combo, i) => (
+            <ComboCard key={combo.name} combo={combo} i={i} />
+          ))}
 
           {/* Desktop payoff panel: closes the pan flush right. Type only, nothing on top of it. */}
-          <div data-payoff className="hidden w-[min(40vw,560px)] shrink-0 flex-col items-start justify-center md:motion-safe:flex">
+          <div data-payoff className="hidden w-[min(40vw,560px)] shrink-0 flex-col items-start justify-center pl-[2vw] md:motion-safe:flex">
             <p data-payoff-line className="display display-stack text-[clamp(3rem,5.6vw,6.5rem)] text-marino">
               Cualquier combo, {COMBO_PRICE}.
             </p>

@@ -2,16 +2,16 @@ import { useRef } from "react";
 import { useGSAP } from "@gsap/react";
 import { gsap } from "../lib/motion.js";
 import Bubbles from "../components/Bubbles.jsx";
-import { HISTORIA, VALORES } from "../data.js";
+import { FOTOS, HISTORIA, ILU, VALORES } from "../data.js";
 
 const HEADLINE = "Una familia, una cocina, desde 1995.";
 const WORDS = HEADLINE.split(" ");
 
-/* HOY composition: three cut-outs fanned out (positions in % of the visual box). */
+/* HOY composition: three HD cut-outs fanned out (positions in % of the visual box, kept inside it). */
 const FAN = [
-  { src: "/cut/brochetas.webp", w: 788, h: 480, alt: "Brochetas de camarón de Los Primos", cls: "left-[-2%] top-[4%] w-[62%]", rot: -9 },
-  { src: "/cut/bbq.webp", w: 810, h: 486, alt: "Camarones BBQ envueltos en tocino", cls: "right-[-2%] top-[30%] w-[60%]", rot: 8 },
-  { src: "/cut/estrella.webp", w: 702, h: 416, alt: "Combo Estrella con tostada, camaroncitos, envuelto y taco", cls: "left-[12%] bottom-[2%] w-[64%]", rot: -3 },
+  { src: "/food/preferida-del-tio.webp", w: 1600, h: 828, alt: "Preferida del Tío: camarones envueltos, empanizados, filete y aros para dos", cls: "left-0 top-[2%] w-[66%] z-10", rot: -8 },
+  { src: "/food/molcajete-mixto.webp", w: 1519, h: 1073, alt: "Molcajete Mixto con chicharrón de pescado y pulpo y guacamole", cls: "right-0 top-[28%] w-[54%] z-20", rot: 7 },
+  { src: "/food/tostada-ceviche.webp", w: 1600, h: 1015, alt: "Tostada de ceviche de camarón con aguacate y pico con pepino", cls: "left-[8%] bottom-[8%] w-[56%] z-30", rot: -4 },
 ];
 
 const SHADOW = "drop-shadow-[0_28px_30px_rgba(6,10,30,0.55)]";
@@ -22,13 +22,13 @@ function StepVisual({ i, stage = false }) {
     return (
       <div className={`h-frame relative w-full overflow-hidden rounded-[32px] bg-marino-2 ${stage ? "h-full" : "aspect-[4/3]"}`}>
         <img
-          src="/img/lobby.webp"
-          width={660}
-          height={740}
+          src={FOTOS.mesa}
+          width={1800}
+          height={1200}
           loading="lazy"
           decoding="async"
-          alt="Comedor de Los Primos Restaurante con mesas listas para recibir a las familias"
-          className="h-lobby absolute inset-0 h-full w-full object-cover object-[40%_60%] will-change-transform"
+          alt="Mesa de Los Primos con mojarra frita, camarones envueltos, tostada y totopos con salsas de la casa"
+          className="h-lobby absolute inset-0 h-full w-full object-cover object-[50%_70%] will-change-transform"
         />
       </div>
     );
@@ -36,11 +36,11 @@ function StepVisual({ i, stage = false }) {
   if (i === 1) {
     return (
       <div className={`flex w-full items-center justify-center ${stage ? "h-full" : "py-4"}`}>
-        <div className="h-cut w-[92%] max-w-[560px]">
+        <div className={`h-cut ${stage ? "w-[min(100%,62dvh)]" : "w-[86%] max-w-[480px]"}`}>
           <img
-            src="/cut/pulpo-dark.webp"
-            width={798}
-            height={498}
+            src="/food/pulpo-zarandeado.webp"
+            width={1600}
+            height={1409}
             loading="lazy"
             decoding="async"
             alt="Pulpo Zarandeado, el platillo que define la casa"
@@ -144,6 +144,14 @@ export default function Historia() {
 
           /* Mascot pop-in + idle bob. */
           gsap.to(q(".h-masc-idle"), { y: -10, rotate: 3, duration: 1.8, ease: "sine.inOut", yoyo: true, repeat: -1 });
+
+          /* Boat line art: drifts across with the whole section, rocking on its own. */
+          gsap.fromTo(
+            q(".h-barco"),
+            { xPercent: 12 },
+            { xPercent: -22, ease: "none", scrollTrigger: { trigger: el, start: "top bottom", end: "bottom top", scrub: 1 } }
+          );
+          gsap.to(q(".h-barco-bob"), { y: -14, rotate: -2.5, duration: 3.4, ease: "sine.inOut", yoyo: true, repeat: -1, transformOrigin: "50% 80%" });
 
           if (pin) {
             el.classList.add("is-pinned");
@@ -379,6 +387,20 @@ export default function Historia() {
 
       {/* Stage (pinned on desktop) */}
       <div className="h-stage relative mt-14 md:mt-20">
+        {/* Brand line art: the fishing boat drifts behind everything at low opacity (decorative) */}
+        <div aria-hidden="true" className="pointer-events-none absolute inset-0 overflow-hidden">
+          <div className="h-barco absolute left-[18%] top-[14%] w-[min(88vw,760px)] opacity-[0.08] md:left-[26%]">
+            <img
+              src={ILU.barco}
+              width={1000}
+              height={838}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              className="h-barco-bob h-auto w-full"
+            />
+          </div>
+        </div>
         <Bubbles count={18} color="232,246,253" />
         <div className="h-stage-inner relative mx-auto grid max-w-[1400px] grid-cols-1 px-4 pb-6 md:px-8">
           <div className="h-left min-w-0">

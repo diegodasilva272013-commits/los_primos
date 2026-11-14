@@ -15,54 +15,18 @@ export const SOCIAL = {
 
 // Sabores: the color-block story (one per signature dish)
 export const SABORES = [
-  // Each sabor is a floating CUT-OUT product (reel: one product per screen, full-bleed color).
-  {
-    id: "pulpo",
-    name: "Pulpo Zarandeado",
-    line: "El platillo de la casa.",
-    body: "Pulpo entero a las brasas con nuestro sazón original, arroz y verdura fresca.",
-    img: "/cut/pulpo.webp", w: 1200, h: 884,
-    color: "#26a0dc",
-    ink: "#1b2766",
-    specs: [["Precio", "$559"], ["Cocción", "Brasas"], ["Para", "Compartir"]],
-  },
-  {
-    id: "brochetas",
-    name: "Brochetas",
-    line: "Camarón, tocino y fuego.",
-    body: "Brochetas de camarón con champiñón, cebolla, pimiento y tocino. Con arroz y brócoli.",
-    img: "/cut/brochetas.webp", w: 788, h: 480,
-    color: "#f6d840",
-    ink: "#1b2766",
-    specs: [["Precio", "$335"], ["Proteína", "Camarón"], ["Estilo", "Parrilla"]],
-  },
-  {
-    id: "bbq",
-    name: "Envueltos BBQ",
-    line: "Dulce, ahumado y regio.",
-    body: "Camarones envueltos en tocino bañados en salsa barbecue, con arroz y verdura.",
-    img: "/cut/bbq.webp", w: 810, h: 486,
-    color: "#ed6f5f",
-    ink: "#1b2766",
-    specs: [["Precio", "$339"], ["Proteína", "Camarón"], ["Salsa", "Barbecue"]],
-  },
-  {
-    id: "estrella",
-    name: "Combo Estrella",
-    line: "Un poquito de todo.",
-    body: "Tostada de ceviche de pescado, camaroncitos empanizados, camarón envuelto y taco de camarón chipotle.",
-    img: "/cut/estrella.webp", w: 702, h: 416,
-    color: "#1b2766",
-    ink: "#fbfdff",
-    specs: [["Precio", "$258"], ["Incluye", "4 piezas"], ["Para", "Uno"]],
-  },
+  // One floating HD product per screen (reel reference). Real menu prices.
+  { id: "aguachile", name: "Aguachile Negro", line: "Frío, picoso y sin rodeos.", body: "Camarón curtido en salsa negra con pepino, zanahoria y cebolla morada.", img: "/food/aguachile-negro.webp", w: 1600, h: 1011, color: "#26a0dc", ink: "#1b2766", specs: [["Precio", "$299"], ["Picor", "Alto"], ["Servido", "Frío"]] },
+  { id: "bbq", name: "Camarones BBQ", line: "Dulce, ahumado y regio.", body: "Camarones envueltos en tocino, bañados en salsa barbecue, con arroz y verdura.", img: "/food/camarones-bbq.webp", w: 1336, h: 752, color: "#f6d840", ink: "#1b2766", specs: [["Precio", "$339"], ["Proteína", "Camarón"], ["Salsa", "Barbecue"]] },
+  { id: "molcajete", name: "Molcajete Mixto", line: "Crujiente y para compartir.", body: "Chicharrón de pescado y de pulpo servido en molcajete con guacamole picosito.", img: "/food/molcajete-mixto.webp", w: 1519, h: 1073, color: "#ed6f5f", ink: "#1b2766", specs: [["Precio", "$489"], ["Para", "Compartir"], ["Con", "Guacamole"]] },
+  { id: "estrella", name: "Combo Estrella", line: "Un poquito de todo.", body: "Tostada de ceviche de pescado, camaroncitos empanizados, camarón envuelto y taco de camarón chipotle.", img: "/food/combo-estrella.webp", w: 1600, h: 928, color: "#1b2766", ink: "#fbfdff", specs: [["Precio", "$258"], ["Incluye", "4 piezas"], ["Para", "Uno"]] },
 ];
 
 export const MENU = [
   {
     id: "barra-fria",
     label: "Barra fría",
-    img: "/img/aguachile-house.webp",
+    img: "/food/aguachile-house.webp", w: 1600, h: 963,
     items: [
       ["Torre de Mariscos", "Camarón curtido, atún, pulpo y camarón cocido", "$359"],
       ["Aguachile House", "Camarón curtido en salsa verde de la casa", "$299"],
@@ -76,7 +40,7 @@ export const MENU = [
   {
     id: "cocteles",
     label: "Cócteles",
-    img: "/img/coctel.webp",
+    img: "/food/coctel-camaron.webp", w: 593, h: 952,
     items: [
       ["Cóctel de Camarón", "Sencillo $146 · Doble $204", "$289"],
       ["Cóctel de Pulpo", "Sencillo $169 · Doble $229", "$319"],
@@ -88,7 +52,7 @@ export const MENU = [
   {
     id: "tacos",
     label: "Tacos y tostadas",
-    img: "/img/tostada.webp",
+    img: "/food/tostada-ceviche.webp", w: 1600, h: 1015,
     items: [
       ["Taco Gobernador", "Machaca de camarón con queso", "$82"],
       ["Taco Camarón Baja", "Capeado, col morada, aderezo chipotle", "$82"],
@@ -102,7 +66,7 @@ export const MENU = [
   {
     id: "caldos",
     label: "Caldos",
-    img: "/img/sopa.webp",
+    img: "/food/sopa-mariscos.webp", w: 1600, h: 1448,
     items: [
       ["Sopa de Mariscos", "Filete, camarón, pulpo, ostión, almeja, jaiba", "$269"],
       ["Camarón Macuil", "", "$239"],
@@ -115,7 +79,7 @@ export const MENU = [
   {
     id: "camarones",
     label: "Camarones",
-    img: "/img/ajillo.webp",
+    img: "/food/camarones-ajillo.webp", w: 1600, h: 890,
     items: [
       ["Camarones Envueltos", "", "$335"],
       ["Camarones al Coco", "", "$326"],
@@ -130,7 +94,7 @@ export const MENU = [
   {
     id: "especialidades",
     label: "Especialidades",
-    img: "/img/filete-rey.webp",
+    img: "/food/filete-philadelphia.webp", w: 1600, h: 882,
     items: [
       ["Pulpo Zarandeado", "Sazón original, a las brasas", "$559"],
       ["Salmón en Salsa Los Cabos", "", "$369"],
@@ -145,7 +109,7 @@ export const MENU = [
   {
     id: "compartir",
     label: "Para compartir",
-    img: "/img/del-tio.webp",
+    img: "/food/preferida-del-tio.webp", w: 1600, h: 828,
     items: [
       ["Preferida del Tío", "Para 2 personas. Individual $338", "$638"],
       ["Tradicional", "Para 2 personas. Individual $294", "$544"],
@@ -159,7 +123,7 @@ export const MENU = [
   {
     id: "bebidas",
     label: "Bebidas",
-    img: "/img/michelada.webp",
+    img: "/photo/bebidas.webp", w: 1800, h: 1200, photo: true,
     items: [
       ["Alma de Jamaica", "Mezcal 400 Conejos, jamaica, limón", "$179"],
       ["Fuego Dorado", "Mezcal 400 Conejos, mango, limón", "$179"],
@@ -173,11 +137,11 @@ export const MENU = [
 ];
 
 export const COMBOS = [
-  { name: "Estrella", items: "Tostada de ceviche de pescado, camaroncitos empanizados, camarón envuelto y taco de camarón chipotle", img: "/img/estrella.webp" },
-  { name: "Clásico", items: "Tostada de ceviche de camarón, posta de mojarra y camarones envueltos", img: "/img/mojarra.webp" },
-  { name: "Estelar", items: "Tostada de ceviche de pescado, filete empanizado y taco gobernador", img: "/img/taco-chilaca.webp" },
-  { name: "Súper", items: "Tostada de ceviche de pescado, camaroncitos empanizados y filete empanizado", img: "/img/empanizados.webp" },
-  { name: "Universitario", items: "Medio filete empanizado y medio caldo de filete", img: "/img/filete-phila.webp" },
+  { name: "Estrella", items: "Tostada de ceviche de pescado, camaroncitos empanizados, camarón envuelto y taco de camarón chipotle", img: "/food/combo-estrella.webp", w: 1600, h: 928 },
+  { name: "Clásico", items: "Tostada de ceviche de camarón, posta de mojarra y camarones envueltos", img: "/food/mojarra-frita.webp", w: 1600, h: 1181 },
+  { name: "Estelar", items: "Tostada de ceviche de pescado, filete empanizado y taco gobernador", img: "/food/chilaca-gobernador.webp", w: 1600, h: 1184 },
+  { name: "Súper", items: "Tostada de ceviche de pescado, camaroncitos empanizados y filete empanizado", img: "/food/camarones-empanizados.webp", w: 1345, h: 786 },
+  { name: "Universitario", items: "Medio filete empanizado y medio caldo de filete", img: "/food/caldo-mariscos.webp", w: 1121, h: 768 },
 ];
 export const COMBO_PRICE = "$258";
 
@@ -200,7 +164,37 @@ export const VALORES = ["Amor", "Humildad", "Congruencia", "Pasión", "Lealtad",
 
 // Hero flavor switcher (clean local cutouts in /public/cut). CHISPA-style: each one recolors the hero.
 export const HERO_PLATOS = [
-  { id: "pulpo", name: "Pulpo Zarandeado", price: "$559", line: "El platillo de la casa, a las brasas.", img: "/cut/pulpo-dark.webp", w: 798, h: 498, bg: "#26a0dc", ink: "#1b2766" },
-  { id: "estrella", name: "Combo Estrella", price: "$258", line: "Tostada, camaroncitos, envuelto y taco.", img: "/cut/estrella.webp", w: 702, h: 416, bg: "#f6d840", ink: "#1b2766" },
-  { id: "bbq", name: "Camarones BBQ", price: "$339", line: "Envueltos en tocino, con salsa barbecue.", img: "/cut/bbq.webp", w: 810, h: 486, bg: "#ed6f5f", ink: "#1b2766" },
+  { id: "pulpo", name: "Pulpo Zarandeado", price: "$559", line: "El platillo de la casa, a las brasas.", img: "/food/pulpo-zarandeado.webp", w: 1600, h: 1409, bg: "#26a0dc", ink: "#1b2766" },
+  { id: "aguachile", name: "Aguachile House", price: "$299", line: "Camarón curtido, pepino y cebolla morada.", img: "/food/aguachile-house.webp", w: 1600, h: 963, bg: "#f6d840", ink: "#1b2766" },
+  { id: "tio", name: "Preferida del Tío", price: "$638", line: "Para dos: envueltos, empanizados, filete y aros.", img: "/food/preferida-del-tio.webp", w: 1600, h: 828, bg: "#ed6f5f", ink: "#1b2766" },
 ];
+
+// VITRINA: every dish with HD cut-out photo. `video` = "/video/<id>.mp4" once the client sends the clips.
+export const PLATILLOS = [
+  { id: "pulpo-zarandeado", name: "Pulpo Zarandeado", cat: "Especialidades", price: "$559", desc: "Pulpo entero a las brasas con nuestro sazón original.", img: "/food/pulpo-zarandeado.webp", w: 1600, h: 1409, video: null },
+  { id: "aguachile-house", name: "Aguachile House", cat: "Barra fría", price: "$299", desc: "Camarón curtido en salsa verde de la casa, pepino y cebolla.", img: "/food/aguachile-house.webp", w: 1600, h: 963, video: null },
+  { id: "aguachile-negro", name: "Aguachile Negro", cat: "Barra fría", price: "$299", desc: "Camarón curtido en salsa negra, picoso y fresco.", img: "/food/aguachile-negro.webp", w: 1600, h: 1011, video: null },
+  { id: "coctel-camaron", name: "Cóctel de Camarón", cat: "Cócteles", price: "Desde $146", desc: "Salsa coctelera de la casa, aguacate, cebolla y cilantro.", img: "/food/coctel-camaron.webp", w: 593, h: 952, video: null },
+  { id: "tostada-ceviche", name: "Tostada de Ceviche", cat: "Tostadas", price: "$123", desc: "Ceviche de camarón, aguacate, chipotle y pico con pepino.", img: "/food/tostada-ceviche.webp", w: 1600, h: 1015, video: null },
+  { id: "chilaca-gobernador", name: "Chilaca Gobernador", cat: "Tacos", price: "$105", desc: "Chile chilaca relleno de machaca de camarón y queso gratinado.", img: "/food/chilaca-gobernador.webp", w: 1600, h: 1184, video: null },
+  { id: "taco-baja", name: "Taco Camarón Baja", cat: "Tacos", price: "$82", desc: "Camarón capeado, col morada, queso y aderezo chipotle.", img: "/food/taco-baja.webp", w: 1090, h: 934, video: null },
+  { id: "sopa-mariscos", name: "Sopa de Mariscos", cat: "Caldos", price: "$269", desc: "Filete, camarón, pulpo, ostión, almeja y jaiba.", img: "/food/sopa-mariscos.webp", w: 1600, h: 1448, video: null },
+  { id: "camarones-bbq", name: "Camarones Envueltos BBQ", cat: "Especialidades", price: "$339", desc: "Envueltos en tocino con salsa barbecue.", img: "/food/camarones-bbq.webp", w: 1336, h: 752, video: null },
+  { id: "camarones-envueltos", name: "Camarones Envueltos", cat: "Camarones", price: "$335", desc: "Camarones envueltos en tocino, con arroz y papas.", img: "/food/camarones-envueltos.webp", w: 1322, h: 791, video: null },
+  { id: "camarones-empanizados", name: "Camarones Empanizados", cat: "Camarones", price: "$305", desc: "Dorados y crujientes, con arroz, papas y ensalada.", img: "/food/camarones-empanizados.webp", w: 1345, h: 786, video: null },
+  { id: "camarones-gratinados", name: "Camarones Gratinados", cat: "Especialidades", price: "$309", desc: "Con champiñones, salsa chipotle y queso gratinado.", img: "/food/camarones-gratinados.webp", w: 1477, h: 817, video: null },
+  { id: "camarones-ajillo", name: "Camarones al Ajillo", cat: "Camarones", price: "$305", desc: "Al ajo con chile, arroz, papas y aguacate.", img: "/food/camarones-ajillo.webp", w: 1600, h: 890, video: null },
+  { id: "filete-philadelphia", name: "Filete Philadelphia", cat: "Especialidades", price: "$303", desc: "Tocino, queso crema y crema de champiñones.", img: "/food/filete-philadelphia.webp", w: 1600, h: 882, video: null },
+  { id: "filete-diabla", name: "Filete a la Diabla", cat: "Filetes", price: "$229", desc: "Filete de pescado en salsa endiablada.", img: "/food/filete-diabla.webp", w: 1218, h: 745, video: null },
+  { id: "filete-ajillo", name: "Filete al Ajillo", cat: "Filetes", price: "$229", desc: "Filete de pescado al ajo con cebolla.", img: "/food/filete-ajillo.webp", w: 1042, h: 596, video: null },
+  { id: "preferida-del-tio", name: "Preferida del Tío", cat: "Para compartir", price: "$638", desc: "Envueltos, empanizados, filete, aros y taco gobernador. Para 2.", img: "/food/preferida-del-tio.webp", w: 1600, h: 828, video: null },
+  { id: "tradicional", name: "Tradicional", cat: "Para compartir", price: "$544", desc: "Camarones empanizados, mojarra, filete y aros de cebolla. Para 2.", img: "/food/tradicional.webp", w: 1600, h: 1204, video: null },
+  { id: "molcajete-mixto", name: "Molcajete Mixto", cat: "Para compartir", price: "$489", desc: "Chicharrón de pescado y pulpo con guacamole picosito.", img: "/food/molcajete-mixto.webp", w: 1519, h: 1073, video: null },
+  { id: "mojarra-frita", name: "Mojarra", cat: "Pescados", price: "$349", desc: "Frita, al ajillo o a las brasas.", img: "/food/mojarra-frita.webp", w: 1600, h: 1181, video: null },
+  { id: "ostiones", name: "Ostión en su Concha", cat: "Barra fría", price: "$259", desc: "Seis piezas frescas con limón y salsa.", img: "/food/ostiones.webp", w: 1010, h: 597, video: null },
+  { id: "ribeye", name: "Rib Eye Asado", cat: "Carnes", price: "$409", desc: "Con papa al horno, guacamole y cebolla asada.", img: "/food/ribeye.webp", w: 1524, h: 928, video: null },
+  { id: "combo-estrella", name: "Combo Estrella", cat: "Combos", price: "$258", desc: "Tostada, camaroncitos, camarón envuelto y taco chipotle.", img: "/food/combo-estrella.webp", w: 1600, h: 928, video: null },
+];
+
+export const ILU = { crab: "/ilu/crab.webp", barco: "/ilu/barco.webp", almeja: "/ilu/almeja.webp" };
+export const FOTOS = { mesa: "/photo/mesa-mojarra.webp", aros: "/photo/aros.webp", pulpoMesa: "/photo/pulpo-mesa.webp", bebidas: "/photo/bebidas.webp", mariscada: "/photo/mariscada-mesa.webp" };
